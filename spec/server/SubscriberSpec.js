@@ -18,7 +18,7 @@ describe("SubscriberSpec", function() {
 		return new Promise((resolve) => {
 			childProcess = spawn(
 				"node",
-				[path.resolve(__dirname, "../../lib/server/index.js"), "-H", host, "-p", port],
+				[path.resolve(__dirname, "../../bin/run"), "-H", host, "-p", port],
 				{cwd: path.resolve(__dirname, "../fixture/sample_content")}
 			);
 			setTimeout(function() {

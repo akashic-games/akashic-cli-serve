@@ -55,6 +55,13 @@ export function run(argv: any): void {
 	const httpServer = http.createServer(app);
 	const io = socketio(httpServer);
 
+	app.use((req, res, next) => {
+		res.removeHeader("X-Powered-By");
+		res.removeHeader("ETag");
+		res.header("Cache-Control", ["private", "no-store", "no-cache", "must-revalidate", "proxy-revalidate"].join(","));
+		res.header("no-cache", "Set-Cookie");
+		next();
+	});
 	app.use(bodyParser.json());
 	const scriptAssetRouter = express.Router();
 	scriptAssetRouter.get("/:scriptName(*.js$)", createScriptAssetController(targetDir));

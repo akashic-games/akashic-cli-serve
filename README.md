@@ -43,11 +43,10 @@ akashic-cli-serve [<options>] [<path>]
 
 ## 開発
 
-初期化: install 後に `npm run setup` を実行する必要があります。
+初期化:
 
 ```
 npm i
-npm run setup
 ```
 
 ビルド:

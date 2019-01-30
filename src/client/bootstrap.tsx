@@ -13,8 +13,8 @@ const store = new Store();
 const operator = new Operator({
 	store,
 	gameViewManager,
-	contentUrl: window.location.origin + "/config/engine/raw",
-	clientContentUrl: window.location.origin + "/config/engine"
+	contentUrl: window.location.origin + "/config/content.raw.json",
+	clientContentUrl: window.location.origin + "/config/content.json"
 });
 var p = operator.bootstrap()
 	.catch(e => console.error(e));

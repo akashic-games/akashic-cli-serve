@@ -6,39 +6,34 @@ import * as bodyParser from "body-parser";
 import * as socketio from "socket.io";
 import * as commander from "commander";
 import { PlayManager, RunnerManager } from "@akashic/headless-driver";
-import { Global } from "./common/Global";
 import { createScriptAssetController } from "./controller/ScriptAssetController";
 import { createApiRouter } from "./route/ApiRoute";
 import { createConfigRouter } from "./route/ConfigRoute";
 import { RunnerStore } from "./domain/RunnerStore";
 import { PlayStore } from "./domain/PlayStore";
 import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
-
-// hostやportをどこからでも参照できるようにするために暫定的にglobalを使う
-// TODO: globalやめる。socket.io や express にコードに global.port を晒してまでやることではない。
-declare const global: Global;
+import {DEFAULT_HOST, DEFAULT_PORT, serverGlobalOption} from "./common/ServerGlobalOption";
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
-	const DEFAULT_PORT = 3300;
-	const DEFAULT_HOST = "localhost";
-
 	const ver = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "package.json"), "utf8")).version;
 	commander
 		.version(ver)
 		.description("Development server for Akashic Engine to debug multiple-player games")
 		.usage("[options] <gamepath>")
-		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)), DEFAULT_PORT)
-		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOST}`, DEFAULT_HOST)
+		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)))
+		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOST}`)
 		.parse(argv);
 
-	if (isNaN(commander.port)) {
+	if (commander.port && isNaN(commander.port)) {
 		console.error("Invalid --port option: " + commander.port);
 		process.exit(1);
 	}
 
-	global.host = commander.hostname;
-	global.port = commander.port;
+	serverGlobalOption.host = commander.hostname || DEFAULT_HOST;
+	serverGlobalOption.port = commander.port || DEFAULT_PORT;
+	serverGlobalOption.useRequestedHost = commander.hostname != null;
+	serverGlobalOption.useRequestedPort = commander.port != null;
 
 	const targetDir = commander.args.length > 0 ? commander.args[0] : process.cwd();
 	const playManager = new PlayManager();
@@ -88,7 +83,7 @@ export function run(argv: any): void {
 	runnerStore.onRunnerPause.add(arg => { io.emit("runnerPause", arg); });
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
-	httpServer.listen(global.port, () => {
-		console.log(`Hosting ${targetDir} on http://${global.host}:${global.port}`);
+	httpServer.listen(serverGlobalOption.port, () => {
+		console.log(`Hosting ${targetDir} on http://${serverGlobalOption.host}:${serverGlobalOption.port}`);
 	});
 }

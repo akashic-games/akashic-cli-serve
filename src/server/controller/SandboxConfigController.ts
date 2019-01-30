@@ -14,8 +14,8 @@ export const createHandlerToGetSandboxConfig = (dirpath: string): express.Reques
 				// TODO ファイル監視。内容に変化がなければ直前の値を返せばよい
 				config = require(configPath);
 			} catch (e) {
-				if (e.code !== "ENOENT") {
-					getSystemLogger().error("Failure to load sandbox.config.json.");
+				if (e.code !== "MODULE_NOT_FOUND") {
+					getSystemLogger().error("Failure to load sandbox.config.json.", e.code);
 				}
 				config = null;
 			}

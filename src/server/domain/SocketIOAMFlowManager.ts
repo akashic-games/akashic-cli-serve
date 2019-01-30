@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import { Permission } from "@akashic/amflow";
 import { Event, Tick, EventCode, EventIndex, JoinEventIndex } from "@akashic/playlog";
+import { getSystemLogger } from "@akashic/headless-driver";
 import { ClientInstanceDescription } from "../../common/types/TestbedEvent";
 import { PlayStore } from "../domain/PlayStore";
 
@@ -54,7 +55,7 @@ export class SocketIOAMFlowManager {
 		}
 
 		socket.on("amflow:open", (playId: string, callback?: (e?: Error) => void) => {
-			console.log("a user connected: " + playId);
+			getSystemLogger().info("a user connected. playId: " + playId);
 			let lastToken: string = null;
 			const amflow = this.playStore.createAMFlow(playId);
 			const emitTick = ((tick: Tick) => socket.emit("amflow:[tick]", tick));
@@ -114,7 +115,7 @@ export class SocketIOAMFlowManager {
 						socket.on("amflow:putStorageData", wrap(amflow.putStorageData.bind(amflow)));
 						socket.on("amflow:getStorageData", wrap(amflow.getStorageData.bind(amflow)));
 						socket.on("amflow:close", wrap((callback: () => void) => {
-							console.log("user disconnected: " + playId);
+							getSystemLogger().info("user disconnected. playId: " + playId);
 							amflow.close(callback);
 							clearListeners();
 						}));
@@ -122,7 +123,7 @@ export class SocketIOAMFlowManager {
 					});
 				}));
 				socket.on("disconnect", wrap(() => {
-					console.log("user disconnected: " + playId);
+					getSystemLogger().info("user disconnected. playId: " + playId);
 					amflow.close(() => { return; });
 					this.deletePlayToken(lastToken);
 					clearListeners();

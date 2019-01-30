@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as express from "express";
+import { getSystemLogger } from "@akashic/headless-driver";
 import { responseSuccess } from "../common/ApiResponse";
 import { SandboxConfigApiResponseData } from "../../common/types/ApiResponse";
 
@@ -14,7 +15,7 @@ export const createHandlerToGetSandboxConfig = (dirpath: string): express.Reques
 				config = require(configPath);
 			} catch (e) {
 				if (e.code !== "ENOENT") {
-					console.error("Failure to load sandbox.config.json.");
+					getSystemLogger().error("Failure to load sandbox.config.json.");
 				}
 				config = null;
 			}

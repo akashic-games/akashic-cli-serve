@@ -12,7 +12,7 @@ import { createConfigRouter } from "./route/ConfigRoute";
 import { RunnerStore } from "./domain/RunnerStore";
 import { PlayStore } from "./domain/PlayStore";
 import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
-import {DEFAULT_HOST, DEFAULT_PORT, serverGlobalOption} from "./common/ServerGlobalOption";
+import { DEFAULT_HOSTNAME, DEFAULT_PORT, serverGlobalConfig } from "./common/ServerGlobalConfig";
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
@@ -22,7 +22,7 @@ export function run(argv: any): void {
 		.description("Development server for Akashic Engine to debug multiple-player games")
 		.usage("[options] <gamepath>")
 		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)))
-		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOST}`)
+		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOSTNAME}`)
 		.parse(argv);
 
 	if (commander.port && isNaN(commander.port)) {
@@ -30,10 +30,15 @@ export function run(argv: any): void {
 		process.exit(1);
 	}
 
-	serverGlobalOption.host = commander.hostname || DEFAULT_HOST;
-	serverGlobalOption.port = commander.port || DEFAULT_PORT;
-	serverGlobalOption.useRequestedHost = commander.hostname != null;
-	serverGlobalOption.useRequestedPort = commander.port != null;
+	if (commander.hostname) {
+		serverGlobalConfig.hostName = commander.hostname;
+		serverGlobalConfig.useRequestedHostName = true;
+	}
+
+	if (commander.port) {
+		serverGlobalConfig.port = commander.port;
+		serverGlobalConfig.useRequestedPort = true;
+	}
 
 	const targetDir = commander.args.length > 0 ? commander.args[0] : process.cwd();
 	const playManager = new PlayManager();
@@ -83,7 +88,7 @@ export function run(argv: any): void {
 	runnerStore.onRunnerPause.add(arg => { io.emit("runnerPause", arg); });
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
-	httpServer.listen(serverGlobalOption.port, () => {
-		console.log(`Hosting ${targetDir} on http://${serverGlobalOption.host}:${serverGlobalOption.port}`);
+	httpServer.listen(serverGlobalConfig.port, () => {
+		console.log(`Hosting ${targetDir} on http://${serverGlobalConfig.hostName}:${serverGlobalConfig.port}`);
 	});
 }

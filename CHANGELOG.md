@@ -1,10 +1,10 @@
 # CHANGELOG
 
 ## Unreleased changes
-* 一部URLを以下のように変更
+* サーバー起動時にホスト名を指定しないとホストPC以外でアクセスできなくなる問題の修正
+* 内部APIのエンドポイントを以下のように変更
   * /config/engine => /config/content.json
   * /config/engine/raw => /config/content.raw.json
-* サーバー起動時にホスト名を指定しないとホストPC以外でアクセスできなくなる問題の修正
 
 ## 0.0.7
 * サーバーにキャッシュを削除する機構を追加

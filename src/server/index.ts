@@ -12,7 +12,7 @@ import { createConfigRouter } from "./route/ConfigRoute";
 import { RunnerStore } from "./domain/RunnerStore";
 import { PlayStore } from "./domain/PlayStore";
 import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
-import { DEFAULT_HOSTNAME, DEFAULT_PORT, serverGlobalConfig } from "./common/ServerGlobalConfig";
+import { serverGlobalConfig } from "./common/ServerGlobalConfig";
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
@@ -21,8 +21,8 @@ export function run(argv: any): void {
 		.version(ver)
 		.description("Development server for Akashic Engine to debug multiple-player games")
 		.usage("[options] <gamepath>")
-		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)))
-		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOSTNAME}`)
+		.option("-p, --port <port>", `The port number to listen. default: ${serverGlobalConfig.port}`, (x => parseInt(x, 10)))
+		.option("-H, --hostname <hostname>", `The host name of the server. default: ${serverGlobalConfig.hostName}`)
 		.parse(argv);
 
 	if (commander.port && isNaN(commander.port)) {

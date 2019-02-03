@@ -22,7 +22,7 @@ export function run(argv: any): void {
 		.description("Development server for Akashic Engine to debug multiple-player games")
 		.usage("[options] <gamepath>")
 		.option("-p, --port <port>", `The port number to listen. default: ${serverGlobalConfig.port}`, (x => parseInt(x, 10)))
-		.option("-H, --hostname <hostname>", `The host name of the server. default: ${serverGlobalConfig.hostName}`)
+		.option("-H, --hostname <hostname>", `The host name of the server. default: ${serverGlobalConfig.hostname}`)
 		.parse(argv);
 
 	if (commander.port && isNaN(commander.port)) {
@@ -31,8 +31,8 @@ export function run(argv: any): void {
 	}
 
 	if (commander.hostname) {
-		serverGlobalConfig.hostName = commander.hostname;
-		serverGlobalConfig.useRequestedHostName = true;
+		serverGlobalConfig.hostname = commander.hostname;
+		serverGlobalConfig.useRequestedHostname = true;
 	}
 
 	if (commander.port) {
@@ -89,6 +89,9 @@ export function run(argv: any): void {
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
 	httpServer.listen(serverGlobalConfig.port, () => {
-		console.log(`Hosting ${targetDir} on http://${serverGlobalConfig.hostName}:${serverGlobalConfig.port}`);
+		if (serverGlobalConfig.port === 80) {
+			console.warn("can not guarantee operation on port 80");
+		}
+		console.log(`Hosting ${targetDir} on http://${serverGlobalConfig.hostname}:${serverGlobalConfig.port}`);
 	});
 }

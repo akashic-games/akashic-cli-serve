@@ -1,7 +1,7 @@
 export interface ServerGlobalConfig {
-	hostName: string;
+	hostname: string;
 	port: number;
-	useRequestedHostName: boolean;
+	useRequestedHostname: boolean;
 	useRequestedPort: boolean;
 }
 
@@ -9,8 +9,8 @@ export const DEFAULT_HOSTNAME = "localhost";
 export const DEFAULT_PORT = 3300;
 
 export const serverGlobalConfig: ServerGlobalConfig = {
-	hostName: DEFAULT_HOSTNAME,
+	hostname: DEFAULT_HOSTNAME,
 	port: DEFAULT_PORT,
-	useRequestedHostName: false,
+	useRequestedHostname: false,
 	useRequestedPort: false
 };

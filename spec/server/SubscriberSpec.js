@@ -9,7 +9,7 @@ const ApiRequestMock = require("../helper/ApiRequestMock");
 describe("SubscriberSpec", function() {
 	const host = ServerConfigMock.hostname;
 	const port = ServerConfigMock.port;
-	const contentUrl = `http://${host}:${port}/config/engine/raw`;
+	const contentUrl = `http://${host}:${port}/config/content.raw.json`;
 	var childProcess;
 	var originalTimeout;
 	beforeAll(function(done) {

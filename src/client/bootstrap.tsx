@@ -14,7 +14,7 @@ const operator = new Operator({
 	store,
 	gameViewManager,
 	contentUrl: window.location.origin + "/config/content.raw.json",
-	clientContentUrl: window.location.origin + "/config/content.json"
+	clientContentUrl: "/config/content.json"  // 絶対パスを渡すとそれがPlayのclientContentUrlとしてサーバーに記録され全クライアントでそのURLが使われることになるのでここでは相対パスを渡す。
 });
 var p = operator.bootstrap()
 	.catch(e => console.error(e));

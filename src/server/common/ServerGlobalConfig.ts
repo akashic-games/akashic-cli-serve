@@ -1,8 +1,8 @@
 export interface ServerGlobalConfig {
 	hostname: string;
 	port: number;
-	useRequestedHostname: boolean;
-	useRequestedPort: boolean;
+	useRequestedHostname: boolean; // サーバー起動時にhostnameオプションが指定されたかどうか
+	useRequestedPort: boolean; // サーバー起動時にportオプションが指定されたかどうか
 }
 
 export const DEFAULT_HOSTNAME = "localhost";

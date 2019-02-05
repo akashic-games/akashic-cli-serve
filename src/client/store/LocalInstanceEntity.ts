@@ -49,7 +49,7 @@ export class LocalInstanceEntity implements GameInstanceEntity {
 		this.executionMode = params.executionMode;
 		this.play = params.play;
 		this.isPaused = false;
-		this.contentUrl = window.location.origin + params.contentUrl; // contentUrlは相対パスになっているので絶対パスにする
+		this.contentUrl = params.contentUrl;
 		this._timeKeeper = new TimeKeeper();
 		this._gameViewManager = params.gameViewManager;
 		this._agvGameContent = this._gameViewManager.createGameContent({

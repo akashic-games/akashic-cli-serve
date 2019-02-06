@@ -1,11 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as util from "util";
 import * as http from "http";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as socketio from "socket.io";
 import * as commander from "commander";
-import { PlayManager, RunnerManager } from "@akashic/headless-driver";
+import chalk from "chalk";
+import { PlayManager, RunnerManager, setSystemLogger } from "@akashic/headless-driver";
 import { Global } from "./common/Global";
 import { createScriptAssetController } from "./controller/ScriptAssetController";
 import { createApiRouter } from "./route/ApiRoute";
@@ -17,6 +19,18 @@ import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
 // hostやportをどこからでも参照できるようにするために暫定的にglobalを使う
 // TODO: globalやめる。socket.io や express にコードに global.port を晒してまでやることではない。
 declare const global: Global;
+
+// 渡されたパラメータを全てstringに変換する
+// chalkを使用する場合、ログ出力時objectの中身を展開してくれないためstringに変換する必要がある
+function convertToStrings(params: any[]): string[] {
+	return params.map(param => {
+		if (typeof param === "object") {
+			return util.inspect(param, {depth: null});
+		} else {
+			return param.toString();
+		}
+	});
+}
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
@@ -30,6 +44,7 @@ export function run(argv: any): void {
 		.usage("[options] <gamepath>")
 		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)), DEFAULT_PORT)
 		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOST}`, DEFAULT_HOST)
+		.option("-v, --verbose", `Display detailed information on console.`)
 		.parse(argv);
 
 	if (isNaN(commander.port)) {
@@ -39,6 +54,33 @@ export function run(argv: any): void {
 
 	global.host = commander.hostname;
 	global.port = commander.port;
+	if (commander.verbose) {
+		setSystemLogger({
+			info: (...messages: any[]) => {
+				console.log(chalk.gray(...convertToStrings(messages)));
+			},
+			debug: (...messages: any[]) => {
+				console.log(chalk.gray(...convertToStrings(messages)));
+			},
+			warn: (...messages: any[]) => {
+				console.warn(chalk.yellow(...convertToStrings(messages)));
+			},
+			error: (...messages: any[]) => {
+				console.error(chalk.red(...convertToStrings(messages)));
+			}
+		});
+	} else {
+		setSystemLogger({
+			info: (...messages: any[]) => {},
+			debug: (...messages: any[]) => {},
+			warn: (...messages: any[]) => {
+				console.warn(chalk.yellow(...convertToStrings(messages)));
+			},
+			error: (...messages: any[]) => {
+				console.error(chalk.red(...convertToStrings(messages)));
+			}
+		});
+	}
 
 	const targetDir = commander.args.length > 0 ? commander.args[0] : process.cwd();
 	const playManager = new PlayManager();
@@ -89,6 +131,7 @@ export function run(argv: any): void {
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
 	httpServer.listen(global.port, () => {
-		console.log(`Hosting ${targetDir} on http://${global.host}:${global.port}`);
+		// サーバー起動のログに関してはSystemLoggerで使用していない色を使いたいので緑を選択
+		console.log(chalk.green(`Hosting ${targetDir} on http://${global.host}:${global.port}`));
 	});
 }

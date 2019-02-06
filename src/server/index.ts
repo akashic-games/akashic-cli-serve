@@ -1,11 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as util from "util";
 import * as http from "http";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as socketio from "socket.io";
 import * as commander from "commander";
-import { PlayManager, RunnerManager } from "@akashic/headless-driver";
+import chalk from "chalk";
+import { PlayManager, RunnerManager, setSystemLogger, getSystemLogger } from "@akashic/headless-driver";
 import { createScriptAssetController } from "./controller/ScriptAssetController";
 import { createApiRouter } from "./route/ApiRoute";
 import { createConfigRouter } from "./route/ConfigRoute";
@@ -13,6 +15,18 @@ import { RunnerStore } from "./domain/RunnerStore";
 import { PlayStore } from "./domain/PlayStore";
 import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
 import { serverGlobalConfig } from "./common/ServerGlobalConfig";
+
+// 渡されたパラメータを全てstringに変換する
+// chalkを使用する場合、ログ出力時objectの中身を展開してくれないためstringに変換する必要がある
+function convertToStrings(params: any[]): string[] {
+	return params.map(param => {
+		if (typeof param === "object") {
+			return util.inspect(param, {depth: null});
+		} else {
+			return param.toString();
+		}
+	});
+}
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
@@ -23,6 +37,7 @@ export function run(argv: any): void {
 		.usage("[options] <gamepath>")
 		.option("-p, --port <port>", `The port number to listen. default: ${serverGlobalConfig.port}`, (x => parseInt(x, 10)))
 		.option("-H, --hostname <hostname>", `The host name of the server. default: ${serverGlobalConfig.hostname}`)
+		.option("-v, --verbose", `Display detailed information on console.`)
 		.parse(argv);
 
 	if (commander.port && isNaN(commander.port)) {
@@ -38,6 +53,34 @@ export function run(argv: any): void {
 	if (commander.port) {
 		serverGlobalConfig.port = commander.port;
 		serverGlobalConfig.useGivenPort = true;
+	}
+
+	if (commander.verbose) {
+		setSystemLogger({
+			info: (...messages: any[]) => {
+				console.log(chalk.gray(...convertToStrings(messages)));
+			},
+			debug: (...messages: any[]) => {
+				console.log(chalk.gray(...convertToStrings(messages)));
+			},
+			warn: (...messages: any[]) => {
+				console.warn(chalk.yellow(...convertToStrings(messages)));
+			},
+			error: (...messages: any[]) => {
+				console.error(chalk.red(...convertToStrings(messages)));
+			}
+		});
+	} else {
+		setSystemLogger({
+			info: (...messages: any[]) => {},
+			debug: (...messages: any[]) => {},
+			warn: (...messages: any[]) => {
+				console.warn(chalk.yellow(...convertToStrings(messages)));
+			},
+			error: (...messages: any[]) => {
+				console.error(chalk.red(...convertToStrings(messages)));
+			}
+		});
 	}
 
 	const targetDir = commander.args.length > 0 ? commander.args[0] : process.cwd();
@@ -90,9 +133,10 @@ export function run(argv: any): void {
 
 	httpServer.listen(serverGlobalConfig.port, () => {
 		if (serverGlobalConfig.port < 1024) {
-			console.warn("Akashic Serve is a development server which is not appropriate for public release. " +
+			getSystemLogger().warn("Akashic Serve is a development server which is not appropriate for public release. " +
 				`We do not recommend to listen on a well-known port ${serverGlobalConfig.port}.`);
 		}
-		console.log(`Hosting ${targetDir} on http://${serverGlobalConfig.hostname}:${serverGlobalConfig.port}`);
+		// サーバー起動のログに関してはSystemLoggerで使用していない色を使いたいので緑を選択
+		console.log(chalk.green(`Hosting ${targetDir} on http://${serverGlobalConfig.hostname}:${serverGlobalConfig.port}`));
 	});
 }

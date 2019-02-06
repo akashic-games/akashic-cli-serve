@@ -45,7 +45,7 @@
     "no-parameter-properties": true,
     "no-debugger": true,
     "no-duplicate-variable": true,
-    "no-empty": true,
+    "no-empty": [true, "allow-empty-functions"],
     "no-eval": true,
     "no-string-literal": false,
     "no-switch-case-fall-through": true,

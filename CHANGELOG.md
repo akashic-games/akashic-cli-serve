@@ -5,6 +5,8 @@
 * 内部APIのエンドポイントを以下のように変更
   * /config/engine => /config/content.json
   * /config/engine/raw => /config/content.raw.json
+* サーバーのコンソール上にログ出力するオプションを追加
+  * オプション未使用時は、warn と error 以外のログ出力が行われないようになった
 
 ## 0.0.7
 * サーバーにキャッシュを削除する機構を追加

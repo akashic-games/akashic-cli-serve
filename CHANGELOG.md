@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased changes
+## 0.0.8
 * サーバー起動時にホスト名を指定しないとホストPC以外でアクセスできなくなる問題の修正
 * 内部APIのエンドポイントを以下のように変更
   * /config/engine => /config/content.json

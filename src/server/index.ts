@@ -32,12 +32,12 @@ export function run(argv: any): void {
 
 	if (commander.hostname) {
 		serverGlobalConfig.hostname = commander.hostname;
-		serverGlobalConfig.useRequestedHostname = true;
+		serverGlobalConfig.useGivenHostname = true;
 	}
 
 	if (commander.port) {
 		serverGlobalConfig.port = commander.port;
-		serverGlobalConfig.useRequestedPort = true;
+		serverGlobalConfig.useGivenPort = true;
 	}
 
 	const targetDir = commander.args.length > 0 ? commander.args[0] : process.cwd();
@@ -89,8 +89,9 @@ export function run(argv: any): void {
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
 	httpServer.listen(serverGlobalConfig.port, () => {
-		if (serverGlobalConfig.port === 80) {
-			console.warn("can not guarantee operation on port 80");
+		if (serverGlobalConfig.port < 1024) {
+			console.warn("Akashic Serve is a development server which is not appropriate for public release. " +
+				`We do not recommend to listen on a well-known port ${serverGlobalConfig.port}.`);
 		}
 		console.log(`Hosting ${targetDir} on http://${serverGlobalConfig.hostname}:${serverGlobalConfig.port}`);
 	});

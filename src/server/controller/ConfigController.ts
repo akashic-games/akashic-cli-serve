@@ -11,8 +11,8 @@ export const createHandlerToGetEngineConfig = (isRaw: boolean): express.RequestH
 			if (urlInfo.length === 1) {
 				urlInfo.push("80");
 			}
-			const hostname = serverGlobalConfig.useRequestedHostname ? serverGlobalConfig.hostname : urlInfo[0];
-			const port = serverGlobalConfig.useRequestedPort ? serverGlobalConfig.port : parseInt(urlInfo[1], 10);
+			const hostname = serverGlobalConfig.useGivenHostname ? serverGlobalConfig.hostname : urlInfo[0];
+			const port = serverGlobalConfig.useGivenPort ? serverGlobalConfig.port : parseInt(urlInfo[1], 10);
 			const baseUrl = `http://${hostname}:${port}`;
 			const engineConfigJson = EngineConfig.getEngineConfig(baseUrl, isRaw);
 			// akashic-gameview側でレスポンスがengineConfigJsonの形式なっていることを前提にしているので、resoponseSuccessは使わない

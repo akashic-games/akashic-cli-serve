@@ -7,18 +7,14 @@ import * as bodyParser from "body-parser";
 import * as socketio from "socket.io";
 import * as commander from "commander";
 import chalk from "chalk";
-import { PlayManager, RunnerManager, setSystemLogger } from "@akashic/headless-driver";
-import { Global } from "./common/Global";
+import { PlayManager, RunnerManager, setSystemLogger, getSystemLogger } from "@akashic/headless-driver";
 import { createScriptAssetController } from "./controller/ScriptAssetController";
 import { createApiRouter } from "./route/ApiRoute";
 import { createConfigRouter } from "./route/ConfigRoute";
 import { RunnerStore } from "./domain/RunnerStore";
 import { PlayStore } from "./domain/PlayStore";
 import { SocketIOAMFlowManager } from "./domain/SocketIOAMFlowManager";
-
-// hostやportをどこからでも参照できるようにするために暫定的にglobalを使う
-// TODO: globalやめる。socket.io や express にコードに global.port を晒してまでやることではない。
-declare const global: Global;
+import { serverGlobalConfig } from "./common/ServerGlobalConfig";
 
 // 渡されたパラメータを全てstringに変換する
 // chalkを使用する場合、ログ出力時objectの中身を展開してくれないためstringに変換する必要がある
@@ -34,26 +30,31 @@ function convertToStrings(params: any[]): string[] {
 
 // TODOこのファイルを改名してcli.tsにする
 export function run(argv: any): void {
-	const DEFAULT_PORT = 3300;
-	const DEFAULT_HOST = "localhost";
-
 	const ver = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "package.json"), "utf8")).version;
 	commander
 		.version(ver)
 		.description("Development server for Akashic Engine to debug multiple-player games")
 		.usage("[options] <gamepath>")
-		.option("-p, --port <port>", `The port number to listen. default: ${DEFAULT_PORT}`, (x => parseInt(x, 10)), DEFAULT_PORT)
-		.option("-H, --hostname <hostname>", `The host name of the server. default: ${DEFAULT_HOST}`, DEFAULT_HOST)
+		.option("-p, --port <port>", `The port number to listen. default: ${serverGlobalConfig.port}`, (x => parseInt(x, 10)))
+		.option("-H, --hostname <hostname>", `The host name of the server. default: ${serverGlobalConfig.hostname}`)
 		.option("-v, --verbose", `Display detailed information on console.`)
 		.parse(argv);
 
-	if (isNaN(commander.port)) {
+	if (commander.port && isNaN(commander.port)) {
 		console.error("Invalid --port option: " + commander.port);
 		process.exit(1);
 	}
 
-	global.host = commander.hostname;
-	global.port = commander.port;
+	if (commander.hostname) {
+		serverGlobalConfig.hostname = commander.hostname;
+		serverGlobalConfig.useGivenHostname = true;
+	}
+
+	if (commander.port) {
+		serverGlobalConfig.port = commander.port;
+		serverGlobalConfig.useGivenPort = true;
+	}
+
 	if (commander.verbose) {
 		setSystemLogger({
 			info: (...messages: any[]) => {
@@ -130,8 +131,12 @@ export function run(argv: any): void {
 	runnerStore.onRunnerPause.add(arg => { io.emit("runnerPause", arg); });
 	runnerStore.onRunnerResume.add(arg => { io.emit("runnerResume", arg); });
 
-	httpServer.listen(global.port, () => {
+	httpServer.listen(serverGlobalConfig.port, () => {
+		if (serverGlobalConfig.port < 1024) {
+			getSystemLogger().warn("Akashic Serve is a development server which is not appropriate for public release. " +
+				`We do not recommend to listen on a well-known port ${serverGlobalConfig.port}.`);
+		}
 		// サーバー起動のログに関してはSystemLoggerで使用していない色を使いたいので緑を選択
-		console.log(chalk.green(`Hosting ${targetDir} on http://${global.host}:${global.port}`));
+		console.log(chalk.green(`Hosting ${targetDir} on http://${serverGlobalConfig.hostname}:${serverGlobalConfig.port}`));
 	});
 }

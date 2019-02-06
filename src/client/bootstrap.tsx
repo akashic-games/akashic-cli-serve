@@ -13,8 +13,8 @@ const store = new Store();
 const operator = new Operator({
 	store,
 	gameViewManager,
-	contentUrl: window.location.origin + "/config/engine/raw",
-	clientContentUrl: window.location.origin + "/config/engine"
+	contentUrl: window.location.origin + "/config/content.raw.json",
+	clientContentUrl: "/config/content.json"  // ここで渡したパスはPlayのclientContentUrlとしてサーバーに記録され全クライアントでそのパスが使われるので、絶対パスではなくルートパスを渡す。
 });
 var p = operator.bootstrap()
 	.catch(e => console.error(e));

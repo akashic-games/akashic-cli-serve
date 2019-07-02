@@ -1,3 +1,6 @@
+**OBSOLETE**: このリポジトリは [`akashic-cli`](https://github.com/akashic-games/akashic-cli) リポジトリに統合されました。
+現在は参照のためにのみ残されています。
+
 <p align="center">
 <img src="https://github.com/akashic-games/akashic-cli-serve/blob/master/img/akashic.png"/>
 </p>
